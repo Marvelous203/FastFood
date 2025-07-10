@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="start"
+    android:paddingVertical="4dp"
+    android:paddingHorizontal="8dp">
+
+    <!-- Avatar -->
+    <androidx.cardview.widget.CardView
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_marginEnd="8dp"
+        android:layout_gravity="top"
+        app:cardCornerRadius="16dp"
+        app:cardBackgroundColor="@color/colorAccent">
+
+        <TextView
+            android:id="@+id/tvAvatarLetter"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:textColor="@color/white"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            tools:text="S" />
+
+    </androidx.cardview.widget.CardView>
+
+    <!-- Message Container -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginEnd="48dp"
+        android:maxWidth="280dp">
+
+        <!-- Sender Name -->
+        <TextView
+            android:id="@+id/tvSenderName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:textColor="@color/colorAccent"
+            android:layout_marginBottom="2dp"
+            android:layout_marginStart="4dp"
+            tools:text="Nhân viên hỗ trợ" />
+
+        <!-- Message Bubble -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start"
+            app:cardCornerRadius="18dp"
+            app:cardElevation="1dp"
+            app:cardBackgroundColor="@color/white"
+            app:strokeColor="@color/light_gray"
+            app:strokeWidth="1dp">
+
+            <TextView
+                android:id="@+id/tvMessage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="12dp"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp"
+                android:lineSpacingExtra="2dp"
+                tools:text="Xin chào! Cảm ơn bạn đã liên hệ. Chúng tôi sẽ hỗ trợ bạn ngay." />
+
+        </androidx.cardview.widget.CardView>
+
+        <!-- Message Time -->
+        <TextView
+            android:id="@+id/tvTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:layout_marginStart="8dp"
+            android:textSize="10sp"
+            android:textColor="@color/gray"
+            tools:text="14:32" />
+
+    </LinearLayout>
+
+    <!-- Spacer to keep message on left -->
+    <View
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:layout_weight="1" />
+
+</LinearLayout> 

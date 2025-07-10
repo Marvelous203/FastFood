@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/navigation_home">
+
+    <fragment
+        android:id="@+id/navigation_home"
+        android:name="com.example.fastfood.fragments.HomeFragment"
+        android:label="@string/menu_home">
+        <action
+            android:id="@+id/action_navigation_home_to_navigation_menu"
+            app:destination="@id/navigation_menu" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/navigation_menu"
+        android:name="com.example.fastfood.fragments.MenuFragment"
+        android:label="@string/menu_menu">
+        <action
+            android:id="@+id/action_navigation_menu_to_navigation_cart"
+            app:destination="@id/navigation_cart" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/navigation_cart"
+        android:name="com.example.fastfood.fragments.CartFragment"
+        android:label="@string/menu_cart">
+        <action
+            android:id="@+id/action_navigation_cart_to_navigation_orders"
+            app:destination="@id/navigation_orders" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/navigation_orders"
+        android:name="com.example.fastfood.fragments.OrdersFragment"
+        android:label="@string/menu_orders" />
+
+    <fragment
+        android:id="@+id/navigation_profile"
+        android:name="com.example.fastfood.fragments.ProfileFragment"
+        android:label="@string/menu_profile" />
+
+</navigation> 

@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">FastFood</string>
+    <string name="tagline">Đồ ăn ngon được giao nhanh chóng</string>
+    <string name="version_info">Phiên bản 1.0</string>
+    
+    <!-- Auth -->
+    <string name="welcome_to_fastfood">Chào mừng đến với FastFood</string>
+    <string name="auth_subtitle">Đặt món ăn yêu thích ngay bây giờ</string>
+    <string name="login">Đăng nhập</string>
+    <string name="register">Đăng ký</string>
+    <string name="login_title">Chào mừng trở lại!</string>
+    <string name="login_subtitle">Đăng nhập vào tài khoản của bạn</string>
+    <string name="register_title">Tạo tài khoản</string>
+    <string name="register_subtitle">Tham gia với chúng tôi ngay hôm nay</string>
+    <string name="email">Email</string>
+    <string name="password">Mật khẩu</string>
+    <string name="confirm_password">Xác nhận mật khẩu</string>
+    <string name="full_name">Họ tên</string>
+    <string name="phone">Số điện thoại</string>
+    <string name="phone_number">Số điện thoại</string>
+    <string name="forgot_password">Quên mật khẩu?</string>
+    <string name="continue_as_guest">Tiếp tục với tư cách khách</string>
+    <string name="guest_login">Tiếp tục với tư cách khách</string>
+    <string name="or">HOẶC</string>
+    <string name="already_have_account">Đã có tài khoản?</string>
+    <string name="dont_have_account">Chưa có tài khoản?</string>
+    <string name="sign_up">Đăng ký</string>
+    <string name="sign_in">Đăng nhập</string>
+    <string name="logout">Đăng xuất</string>
+    <string name="confirm_logout">Bạn có chắc chắn muốn đăng xuất?</string>
+    
+    <!-- Navigation -->
+    <string name="home">Trang chủ</string>
+    <string name="menu">Thực đơn</string>
+    <string name="orders">Đơn hàng</string>
+    <string name="profile">Hồ sơ</string>
+    <string name="cart">Giỏ hàng</string>
+    <string name="my_orders">Đơn hàng của tôi</string>
+    
+    <!-- Home -->
+    <string name="good_morning">Chào buổi sáng</string>
+    <string name="good_afternoon">Chào buổi chiều</string>
+    <string name="good_evening">Chào buổi tối</string>
+    <string name="what_would_you_like_to_eat">Hôm nay bạn muốn ăn gì?</string>
+    <string name="search_food">Tìm kiếm món ăn...</string>
+    <string name="categories">Danh mục</string>
+    <string name="popular_foods">Món ăn phổ biến</string>
+    <string name="recommended_for_you">Đề xuất cho bạn</string>
+    <string name="recommended">Đề xuất cho bạn</string>
+    <string name="see_all">Xem tất cả</string>
+    
+    <!-- Food -->
+    <string name="add_to_cart">Thêm vào giỏ hàng</string>
+    <string name="rating_format">Đánh giá: %s sao</string>
+    <string name="cooking_time_format">Thời gian: %s phút</string>
+    <string name="quantity">Số lượng</string>
+    <string name="special_instructions">Ghi chú đặc biệt</string>
+    <string name="add_note">Thêm ghi chú (tùy chọn)</string>
+
+
+    
+    <!-- Cart -->
+    <string name="my_cart">Giỏ hàng của tôi</string>
+    <string name="cart_empty">Giỏ hàng trống</string>
+    <string name="cart_empty_subtitle">Thêm món ăn ngon để bắt đầu</string>
+    <string name="cart_empty_message">Thêm món ăn vào giỏ hàng để bắt đầu đặt hàng</string>
+    <string name="subtotal">Tạm tính</string>
+    <string name="delivery_fee">Phí giao hàng</string>
+    <string name="total">Tổng cộng</string>
+    <string name="checkout">Thanh toán</string>
+    <string name="items_in_cart">%d món</string>
+    
+    <!-- Checkout -->
+    <string name="checkout_title">Thanh toán</string>
+    <string name="delivery_address">Địa chỉ giao hàng</string>
+    <string name="payment_method">Phương thức thanh toán</string>
+    <string name="cash_on_delivery">Thanh toán khi nhận hàng</string>
+    <string name="credit_card">Thẻ tín dụng</string>
+    <string name="order_summary">Tóm tắt đơn hàng</string>
+    <string name="place_order">Đặt hàng</string>
+    <string name="estimated_delivery">Dự kiến giao hàng: %s</string>
+    
+    <!-- Orders -->
+    <string name="order_history">Lịch sử đơn hàng</string>
+    <string name="order_details">Chi tiết đơn hàng</string>
+    <string name="order_status">Trạng thái đơn hàng</string>
+    <string name="pending">Chờ xử lý</string>
+    <string name="confirmed">Đã xác nhận</string>
+    <string name="preparing">Đang chuẩn bị</string>
+    <string name="ready">Sẵn sàng</string>
+    <string name="delivered">Đã giao</string>
+    <string name="cancelled">Đã hủy</string>
+    <string name="track_order">Theo dõi đơn hàng</string>
+    <string name="cancel_order">Hủy đơn hàng</string>
+    <string name="reorder">Đặt lại</string>
+    <string name="no_orders">Chưa có đơn hàng nào</string>
+    <string name="no_orders_subtitle">Lịch sử đơn hàng sẽ xuất hiện tại đây</string>
+    
+    <!-- Profile -->
+    <string name="my_profile">Hồ sơ của tôi</string>
+    <string name="guest">Khách</string>
+    <string name="edit_profile">Chỉnh sửa hồ sơ</string>
+    <string name="change_password">Đổi mật khẩu</string>
+    <string name="delivery_addresses">Địa chỉ giao hàng</string>
+    <string name="payment_methods">Phương thức thanh toán</string>
+    <string name="notifications">Thông báo</string>
+    <string name="help_support">Hỗ trợ</string>
+    <string name="about">Về chúng tôi</string>
+    <string name="save">Lưu</string>
+    
+    <!-- Common -->
+    <string name="ok">OK</string>
+    <string name="cancel">Hủy</string>
+    <string name="yes">Có</string>
+    <string name="no">Không</string>
+    <string name="loading">Đang tải...</string>
+    <string name="error">Lỗi</string>
+    <string name="success">Thành công</string>
+    <string name="refresh">Làm mới</string>
+    <string name="load_more">Tải thêm</string>
+    
+    <!-- Validation -->
+    <string name="field_required">Trường này là bắt buộc</string>
+    <string name="invalid_email">Email không hợp lệ</string>
+    <string name="password_too_short">Mật khẩu phải có ít nhất 6 ký tự</string>
+    <string name="passwords_not_match">Mật khẩu xác nhận không khớp</string>
+    <string name="invalid_phone">Số điện thoại không hợp lệ</string>
+    
+    <!-- Error Messages -->
+    <string name="error_server">Lỗi máy chủ. Vui lòng thử lại sau.</string>
+    <string name="error_invalid_credentials">Email hoặc mật khẩu không đúng</string>
+    <string name="error_email_exists">Email đã tồn tại</string>
+    <string name="error_required_fields">Vui lòng điền đầy đủ thông tin bắt buộc</string>
+    <string name="network_error">Lỗi kết nối mạng</string>
+    <string name="server_error">Lỗi máy chủ</string>
+    <string name="login_failed">Đăng nhập thất bại</string>
+    <string name="register_failed">Đăng ký thất bại</string>
+    <string name="load_data_failed">Không thể tải dữ liệu</string>
+    <string name="no_internet">Không có kết nối internet</string>
+    <string name="init_error">Lỗi khởi tạo: %s</string>
+    <string name="load_data_error">Lỗi tải dữ liệu: %s</string>
+    <string name="error_loading_categories">Không thể tải danh mục</string>
+    <string name="error_loading_data">Không thể tải dữ liệu</string>
+    
+    <!-- Success Messages -->
+    <string name="success_login">Đăng nhập thành công</string>
+    <string name="success_register">Tạo tài khoản thành công</string>
+    <string name="success_order_placed">Đặt hàng thành công</string>
+    <string name="success_profile_updated">Cập nhật hồ sơ thành công</string>
+    <string name="login_success">Đăng nhập thành công</string>
+    <string name="register_success">Đăng ký thành công</string>
+    <string name="logout_success">Đăng xuất thành công</string>
+    <string name="add_to_cart_success">Đã thêm vào giỏ hàng</string>
+
+    <!-- Confirmation -->
+    <string name="confirm_cancel_order">Bạn có chắc chắn muốn hủy đơn hàng này?</string>
+    <string name="confirm_delete">Bạn có chắc chắn muốn xóa mục này?</string>
+    
+    <!-- Empty States -->
+    <string name="no_favorites">Chưa có món yêu thích</string>
+    <string name="no_favorites_subtitle">Thêm món ăn vào danh sách yêu thích</string>
+    <string name="no_search_results">Không tìm thấy kết quả</string>
+    <string name="no_search_results_subtitle">Thử tìm kiếm với từ khóa khác</string>
+    
+    <!-- Search -->
+    <string name="search">Tìm kiếm</string>
+    <string name="search_results">Kết quả tìm kiếm</string>
+    <string name="search_failed">Không thể tìm kiếm. Vui lòng thử lại.</string>
+    
+    <!-- Miscellaneous -->
+    <string name="free">Miễn phí</string>
+    <string name="today">Hôm nay</string>
+    <string name="yesterday">Hôm qua</string>
+    <string name="this_week">Tuần này</string>
+    <string name="last_week">Tuần trước</string>
+    <string name="this_month">Tháng này</string>
+    
+    <!-- Content Descriptions -->
+    <string name="category_image">Hình ảnh danh mục</string>
+    <string name="user_avatar">Ảnh đại diện</string>
+    <string name="back_button">Nút quay lại</string>
+    <string name="cart_icon">Biểu tượng giỏ hàng</string>
+    <string name="search_icon">Biểu tượng tìm kiếm</string>
+    <string name="error_invalid_email">error_invalid_email</string>
+    <string name="error_password_too_short">error_password_too_short</string>
+    <string name="product_details">Chi tiết sản phẩm</string>
+    <string name="product_not_found">Không tìm thấy sản phẩm</string>
+    <string name="discount_format">-%d%%</string>
+    <string name="not_available">Không có thông tin</string>
+    <string name="brand">Thương hiệu:</string>
+    <string name="weight">Khối lượng:</string>
+    <string name="origin">Xuất xứ:</string>
+    <string name="packaging">Đóng gói:</string>
+    <string name="serving_size">Khẩu phần:</string>
+    <string name="nutrition_facts">Thông tin dinh dưỡng</string>
+    <string name="ingredients">Thành phần</string>
+    <string name="allergens">Dị ứng</string>
+    <string name="storage_instructions">Hướng dẫn bảo quản</string>
+    <string name="usage_instructions">Hướng dẫn sử dụng</string>
+    <string name="welcome">Chào mừng</string>
+
+    <!-- Empty States -->
+    <string name="empty_state_icon">Empty state icon</string>
+    <string name="no_foods_available">Không có món ăn nào</string>
+    <string name="no_foods_in_category">Không có món ăn trong danh mục này</string>
+    <string name="check_back_later">Vui lòng quay lại sau</string>
+    <string name="try_again_later">Vui lòng thử lại sau</string>
+    <string name="check_internet_connection">Kiểm tra kết nối internet và thử lại</string>
+    <string name="try_again">Thử lại</string>
+    <string name="error_network">Lỗi kết nối mạng</string>
+    
+    <!-- Food Item -->
+    <string name="diet_type">Loại chế độ ăn</string>
+    <string name="rating_icon">Biểu tượng đánh giá</string>
+    <string name="stock_limited">Sắp hết hàng</string>
+    <string name="stock_out">Hết hàng</string>
+    <string name="stock_available">Còn hàng</string>
+    <string name="vegetarian">Chay</string>
+    <string name="vegan">Thuần chay</string>
+    
+    <!-- Bottom Navigation Menu -->
+
+    <!-- Other strings -->
+    <string name="search_hint">Search for food…</string>
+    <string name="no_results">No results found</string>
+    <string name="error_loading">Error loading data</string>
+    <string name="retry">Retry</string>
+    
+    <!-- Cart Messages -->
+    <string name="added_to_cart">Đã thêm vào giỏ hàng</string>
+
+    <!-- Product Details -->
+    <string name="brand_format">Thương hiệu: %s</string>
+    <string name="out_of_stock">Hết hàng</string>
+    <string name="added_to_cart_success">Đã thêm vào giỏ hàng</string>
+    <string name="error_add_to_cart">Không thể thêm vào giỏ hàng</string>
+    <string name="additional_information">Thông tin bổ sung</string>
+
+    <!-- Menu items -->
+    <string name="menu_home">Trang chủ</string>
+    <string name="menu_menu">Thực đơn</string>
+    <string name="menu_cart">Giỏ hàng</string>
+    <string name="menu_orders">Đơn hàng</string>
+    <string name="menu_profile">Tài khoản</string>
+    
+    <!-- Cart -->
+    <string name="food_image">Hình ảnh món ăn</string>
+    <string name="decrease_quantity">Giảm số lượng</string>
+    <string name="increase_quantity">Tăng số lượng</string>
+    <string name="remove_from_cart">Xóa khỏi giỏ hàng</string>
+    <string name="price_format">%,.0f ₫</string>
+    
+    <!-- Other strings -->
+</resources>

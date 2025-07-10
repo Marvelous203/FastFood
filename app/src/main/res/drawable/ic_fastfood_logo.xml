@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="120dp"
+    android:height="120dp"
+    android:viewportWidth="120"
+    android:viewportHeight="120">
+    
+    <!-- Background Circle -->
+    <path
+        android:fillColor="@color/primary"
+        android:pathData="M60,60m-50,0a50,50 0,1 1,100 0a50,50 0,1 1,-100 0" />
+    
+    <!-- Burger Icon -->
+    <!-- Top Bun -->
+    <path
+        android:fillColor="@color/white"
+        android:pathData="M35,45 L85,45 Q87,45 87,47 Q87,49 85,49 L35,49 Q33,49 33,47 Q33,45 35,45 Z" />
+    
+    <!-- Lettuce -->
+    <path
+        android:fillColor="#4CAF50"
+        android:pathData="M35,52 L85,52 Q87,52 87,54 Q87,56 85,56 L35,56 Q33,56 33,54 Q33,52 35,52 Z" />
+    
+    <!-- Meat -->
+    <path
+        android:fillColor="#8D6E63"
+        android:pathData="M35,59 L85,59 Q87,59 87,61 Q87,63 85,63 L35,63 Q33,63 33,61 Q33,59 35,59 Z" />
+    
+    <!-- Bottom Bun -->
+    <path
+        android:fillColor="@color/white"
+        android:pathData="M35,66 L85,66 Q87,66 87,68 Q87,70 85,70 L35,70 Q33,70 33,68 Q33,66 35,66 Z" />
+    
+    <!-- Fork Icon -->
+    <path
+        android:fillColor="@color/white"
+        android:pathData="M25,30 L27,30 L27,40 L25,40 Z M29,30 L31,30 L31,40 L29,40 Z M33,30 L35,30 L35,40 L33,40 Z M27,40 L31,40 L31,85 L27,85 Z" />
+    
+    <!-- Spoon Icon -->
+    <path
+        android:fillColor="@color/white"
+        android:pathData="M90,30 Q95,30 95,35 Q95,40 90,40 L88,40 L88,85 L86,85 L86,40 L84,40 Q79,40 79,35 Q79,30 84,30 Z" />
+    
+</vector> 
