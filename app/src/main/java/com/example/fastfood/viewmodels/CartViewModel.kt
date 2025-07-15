@@ -13,28 +13,28 @@ import com.example.fastfood.utils.Result
 import kotlinx.coroutines.launch
 
 class CartViewModel(application: Application) : AndroidViewModel(application) {
-    
+
     private val cartManager = CartManager(application)
     private val apiService = RetrofitClient.getApiService()
-    
+
     private val _addToCartResult = MutableLiveData<Result<CartItem>>()
     val addToCartResult: LiveData<Result<CartItem>> = _addToCartResult
-    
+
     private val _cartItems = MutableLiveData<List<CartItem>>()
     val cartItems: LiveData<List<CartItem>> = _cartItems
-    
+
     private val _totalPrice = MutableLiveData<Double>()
     val totalPrice: LiveData<Double> = _totalPrice
-    
+
     private val _itemCount = MutableLiveData<Int>()
     val itemCount: LiveData<Int> = _itemCount
-    
+
     private val _message = MutableLiveData<String>()
     val message: LiveData<String> = _message
-    
+
     private val _navigateToCheckout = MutableLiveData<Boolean>()
     val navigateToCheckout: LiveData<Boolean> = _navigateToCheckout
-    
+
     init {
         loadCartItems()
     }
@@ -59,15 +59,25 @@ class CartViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun loadCartItems() {
+        fun loadCartItems() {
         viewModelScope.launch {
             try {
                 val result = cartManager.fetchCart()
                 when (result) {
                     is Result.Success -> {
-                        _cartItems.value = result.data
-                        _totalPrice.value = cartManager.getTotalPrice()
+                        // Refresh thông tin sản phẩm để đảm bảo có giá
+                        cartManager.refreshCartItemsInfo()
+
+                        _cartItems.value = cartManager.getCartItems()
                         _itemCount.value = cartManager.getItemCount()
+
+                        // Tính tổng tiền từ API (suspend function)
+                        try {
+                            val totalPrice = cartManager.getTotalPrice()
+                            _totalPrice.value = totalPrice
+                        } catch (e: Exception) {
+                            _message.value = "Không thể tính tổng tiền: ${e.message}"
+                        }
                     }
                     is Result.Failure -> {
                         _message.value = result.exception.message
@@ -78,7 +88,7 @@ class CartViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
     }
-    
+
     fun updateQuantity(foodId: String, quantity: Int) {
         viewModelScope.launch {
             try {
@@ -96,7 +106,7 @@ class CartViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
     }
-    
+
     fun removeFromCart(foodId: String) {
         viewModelScope.launch {
             try {
@@ -115,13 +125,13 @@ class CartViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
     }
-    
+
     fun clearCart() {
         cartManager.clearCart()
         loadCartItems()
         _message.value = "Đã xóa toàn bộ giỏ hàng"
     }
-    
+
     fun proceedToCheckout() {
         if (isCartEmpty()) {
             _message.value = "Giỏ hàng trống"
@@ -129,11 +139,11 @@ class CartViewModel(application: Application) : AndroidViewModel(application) {
         }
         _navigateToCheckout.value = true
     }
-    
+
     fun onCheckoutNavigated() {
         _navigateToCheckout.value = false
     }
-    
+
     private fun isCartEmpty(): Boolean {
         return cartItems.value.isNullOrEmpty()
     }
@@ -150,4 +160,4 @@ class CartViewModel(application: Application) : AndroidViewModel(application) {
             null
         }
     }
-} 
+}

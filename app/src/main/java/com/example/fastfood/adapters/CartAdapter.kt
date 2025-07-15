@@ -50,39 +50,66 @@ class CartAdapter(
             // Set quantity immediately
             updateQuantityDisplay(item.quantity)
 
-            // Clear previous data
-            foodName.text = "Đang tải..."
-            foodPrice.text = ""
-            Glide.with(itemView.context)
-                .load(R.drawable.placeholder_food)
-                .into(foodImage)
+            // Sử dụng thông tin đã có sẵn trong CartItem
+            if (item.name.isNotEmpty() && item.price > 0) {
+                // Có thông tin sản phẩm trong cache
+                foodName.text = item.name
+                updatePriceDisplay(item.price, item.quantity)
 
-            // Cancel any existing update job
-            updateJob?.cancel()
+                // Load image
+                if (item.image.isNotEmpty()) {
+                    Glide.with(itemView.context)
+                        .load(item.image)
+                        .placeholder(R.drawable.placeholder_food)
+                        .error(R.drawable.placeholder_food)
+                        .into(foodImage)
+                } else {
+                    Glide.with(itemView.context)
+                        .load(R.drawable.placeholder_food)
+                        .into(foodImage)
+                }
+            } else {
+                // Chưa có thông tin sản phẩm, fetch từ API
+                foodName.text = "Đang tải..."
+                foodPrice.text = ""
+                Glide.with(itemView.context)
+                    .load(R.drawable.placeholder_food)
+                    .into(foodImage)
 
-            // Fetch product details
-            adapterScope.launch {
-                try {
-                    val product = withContext(Dispatchers.IO) {
-                        getProductDetails(item.foodId)
-                    }
-                    
-                    if (product != null) {
-                        foodName.text = product.name
-                        val finalPrice = if (product.discount > 0) {
-                            product.price * (1 - product.discount / 100.0)
-                        } else {
-                            product.price
+                // Cancel any existing update job
+                updateJob?.cancel()
+
+                // Fetch product details
+                adapterScope.launch {
+                    try {
+                        val product = withContext(Dispatchers.IO) {
+                            getProductDetails(item.foodId)
                         }
-                        updatePriceDisplay(finalPrice, item.quantity)
-                        
-                        // Load first product image if available
-                        if (!product.images.isNullOrEmpty()) {
-                            Glide.with(itemView.context)
-                                .load(product.images[0].path)
-                                .placeholder(R.drawable.placeholder_food)
-                                .error(R.drawable.placeholder_food)
-                                .into(foodImage)
+
+                        if (product != null) {
+                            foodName.text = product.name
+                            val finalPrice = if (product.discount > 0) {
+                                product.price * (1 - product.discount / 100.0)
+                            } else {
+                                product.price
+                            }
+                            updatePriceDisplay(finalPrice, item.quantity)
+
+                            // Load first product image if available
+                            if (!product.images.isNullOrEmpty()) {
+                            try {
+                                Glide.with(itemView.context)
+                                    .load(product.images[0].path)
+                                    .placeholder(R.drawable.placeholder_food)
+                                    .error(R.drawable.placeholder_food)
+                                    .timeout(10000) // 10 second timeout
+                                    .into(foodImage)
+                            } catch (e: Exception) {
+                                // Fallback to placeholder if Glide fails
+                                Glide.with(itemView.context)
+                                    .load(R.drawable.placeholder_food)
+                                    .into(foodImage)
+                            }
                         }
                     } else {
                         foodName.text = "Sản phẩm không tồn tại"
@@ -92,6 +119,7 @@ class CartAdapter(
                     foodName.text = "Lỗi tải thông tin"
                     foodPrice.text = ""
                 }
+            }
             }
 
             // Handle quantity changes with debounce
@@ -123,13 +151,13 @@ class CartAdapter(
 
         private fun updateQuantity(newQuantity: Int) {
             val item = currentItem ?: return
-            
+
             // Update UI immediately
             updateQuantityDisplay(newQuantity)
-            
+
             // Cancel previous update if any
             updateJob?.cancel()
-            
+
             // Start new update with delay
             updateJob = adapterScope.launch {
                 delay(500) // Debounce for 500ms
@@ -161,4 +189,4 @@ class CartAdapter(
             return oldItem == newItem
         }
     }
-} 
+}

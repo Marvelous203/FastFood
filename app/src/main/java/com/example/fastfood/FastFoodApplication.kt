@@ -9,4 +9,4 @@ class FastFoodApplication : Application() {
         // Initialize RetrofitClient
         RetrofitClient.initialize(this)
     }
-} 
+}

@@ -15,7 +15,7 @@ class CartManager(private val context: Context) {
     private val gson = Gson()
     private val apiService: ApiService = RetrofitClient.getApiService()
     private val preferencesManager = PreferencesManager(context)
-    
+
     suspend fun addToCart(productId: String, quantity: Int): Result<CartItem> {
         return withContext(Dispatchers.IO) {
             try {
@@ -25,18 +25,45 @@ class CartManager(private val context: Context) {
 
                 val request = AddToCartRequest(productId, quantity)
                 val response = apiService.addToCart(request)
-                
+
                 when {
                     response.isSuccessful && response.body() != null -> {
                         val cartResponse = response.body()!!
+
+                        // Lưu cartId từ response
+                        saveCartId(cartResponse.cart.id)
+
                         val addedItem = cartResponse.cart.items.find { it.productId == productId }
                             ?: return@withContext Result.failure(Exception("Không thể thêm sản phẩm vào giỏ hàng"))
-                        
+
+                        // Lấy thông tin sản phẩm từ API để có giá và tên
+                        var price = 0.0
+                        var name = ""
+                        var image = ""
+                        try {
+                            val productResponse = apiService.getFoodById(addedItem.productId)
+                            if (productResponse.isSuccessful) {
+                                val product = productResponse.body()
+                                price = (product?.get("price") as? Number)?.toDouble() ?: 0.0
+                                name = product?.get("name") as? String ?: ""
+                                val images = product?.get("images") as? List<*>
+                                image = if (images?.isNotEmpty() == true) {
+                                    val firstImage = images[0] as? Map<*, *>
+                                    firstImage?.get("path") as? String ?: ""
+                                } else ""
+                            }
+                        } catch (e: Exception) {
+                            // Nếu không lấy được thông tin sản phẩm, vẫn tiếp tục
+                        }
+
                         val cartItem = CartItem(
                             foodId = addedItem.productId,
-                            quantity = addedItem.quantity
+                            quantity = addedItem.quantity,
+                            price = price,
+                            name = name,
+                            image = image
                         )
-                        
+
                         // Update local storage
                         val currentItems = getCartItems().toMutableList()
                         val existingItemIndex = currentItems.indexOfFirst { it.foodId == productId }
@@ -46,7 +73,7 @@ class CartManager(private val context: Context) {
                             currentItems.add(cartItem)
                         }
                         saveCartItems(currentItems)
-                        
+
                         return@withContext Result.success(cartItem)
                     }
                     response.code() == 401 -> {
@@ -63,7 +90,7 @@ class CartManager(private val context: Context) {
                                 "Lỗi thêm vào giỏ hàng"
                             }
                         } else "Lỗi thêm vào giỏ hàng: ${response.message()}"
-                        
+
                         return@withContext Result.failure(Exception(errorMessage))
                     }
                 }
@@ -81,17 +108,44 @@ class CartManager(private val context: Context) {
                 }
 
                 val response = apiService.getMyCart()
-                
+
                 when {
                     response.isSuccessful && response.body() != null -> {
                         val cartResponse = response.body()!!
+
+                        // Lưu cartId từ response
+                        saveCartId(cartResponse.cart.id)
+
                         val cartItems = cartResponse.cart.items.map { item ->
+                            // Lấy thông tin sản phẩm từ API
+                            var price = 0.0
+                            var name = ""
+                            var image = ""
+                            try {
+                                val productResponse = apiService.getFoodById(item.productId)
+                                if (productResponse.isSuccessful) {
+                                    val product = productResponse.body()
+                                    price = (product?.get("price") as? Number)?.toDouble() ?: 0.0
+                                    name = product?.get("name") as? String ?: ""
+                                    val images = product?.get("images") as? List<*>
+                                    image = if (images?.isNotEmpty() == true) {
+                                        val firstImage = images[0] as? Map<*, *>
+                                        firstImage?.get("path") as? String ?: ""
+                                    } else ""
+                                }
+                            } catch (e: Exception) {
+                                // Nếu không lấy được thông tin sản phẩm, vẫn tiếp tục
+                            }
+
                             CartItem(
                                 foodId = item.productId,
-                                quantity = item.quantity
+                                quantity = item.quantity,
+                                price = price,
+                                name = name,
+                                image = image
                             )
                         }
-                        
+
                         // Save to local storage
                         saveCartItems(cartItems)
                         return@withContext Result.success(cartItems)
@@ -110,7 +164,7 @@ class CartManager(private val context: Context) {
                                 "Lỗi tải giỏ hàng"
                             }
                         } else "Lỗi tải giỏ hàng: ${response.message()}"
-                        
+
                         return@withContext Result.failure(Exception(errorMessage))
                     }
                 }
@@ -128,7 +182,7 @@ class CartManager(private val context: Context) {
                 }
 
                 val response = apiService.removeItemFromCart(foodId)
-                
+
                 when {
                     response.isSuccessful -> {
                         // Remove from local storage
@@ -151,7 +205,7 @@ class CartManager(private val context: Context) {
                                 "Lỗi xóa sản phẩm"
                             }
                         } else "Lỗi xóa sản phẩm: ${response.message()}"
-                        
+
                         return@withContext Result.failure(Exception(errorMessage))
                     }
                 }
@@ -170,18 +224,50 @@ class CartManager(private val context: Context) {
 
                 val request = UpdateCartItemRequest(quantity)
                 val response = apiService.updateCartItem(foodId, request)
-                
+
                 when {
                     response.isSuccessful && response.body() != null -> {
                         val cartResponse = response.body()!!
+
+                        // Lưu cartId từ response
+                        saveCartId(cartResponse.cart.id)
+
                         val updatedItem = cartResponse.cart.items.find { it.productId == foodId }
                             ?: return@withContext Result.failure(Exception("Không thể cập nhật số lượng"))
-                        
+
+                        // Lấy thông tin sản phẩm từ API hoặc từ cache
+                        val existingItem = getCartItems().find { it.foodId == foodId }
+                        var price = existingItem?.price ?: 0.0
+                        var name = existingItem?.name ?: ""
+                        var image = existingItem?.image ?: ""
+
+                        // Nếu chưa có thông tin sản phẩm, fetch từ API
+                        if (price == 0.0 || name.isEmpty()) {
+                            try {
+                                val productResponse = apiService.getFoodById(updatedItem.productId)
+                                if (productResponse.isSuccessful) {
+                                    val product = productResponse.body()
+                                    price = (product?.get("price") as? Number)?.toDouble() ?: 0.0
+                                    name = product?.get("name") as? String ?: ""
+                                    val images = product?.get("images") as? List<*>
+                                    image = if (images?.isNotEmpty() == true) {
+                                        val firstImage = images[0] as? Map<*, *>
+                                        firstImage?.get("path") as? String ?: ""
+                                    } else ""
+                                }
+                            } catch (e: Exception) {
+                                // Nếu không lấy được thông tin sản phẩm, vẫn tiếp tục
+                            }
+                        }
+
                         val cartItem = CartItem(
                             foodId = updatedItem.productId,
-                            quantity = updatedItem.quantity
+                            quantity = updatedItem.quantity,
+                            price = price,
+                            name = name,
+                            image = image
                         )
-                        
+
                         // Update local storage
                         val currentItems = getCartItems().toMutableList()
                         val existingItemIndex = currentItems.indexOfFirst { it.foodId == foodId }
@@ -189,7 +275,7 @@ class CartManager(private val context: Context) {
                             currentItems[existingItemIndex] = cartItem
                         }
                         saveCartItems(currentItems)
-                        
+
                         return@withContext Result.success(cartItem)
                     }
                     response.code() == 401 -> {
@@ -206,7 +292,7 @@ class CartManager(private val context: Context) {
                                 "Lỗi cập nhật số lượng"
                             }
                         } else "Lỗi cập nhật số lượng: ${response.message()}"
-                        
+
                         return@withContext Result.failure(Exception(errorMessage))
                     }
                 }
@@ -224,14 +310,118 @@ class CartManager(private val context: Context) {
 
     fun clearCart() {
         saveCartItems(emptyList())
+        // Xóa cartId khi clear cart
+        sharedPreferences.edit().remove("CART_ID").apply()
     }
 
     fun getItemCount(): Int {
         return getCartItems().sumOf { it.quantity }
     }
 
-    fun getTotalPrice(): Double {
-        return getCartItems().sumOf { it.quantity.toDouble() }  // Temporary fix - will need to fetch actual prices from API
+    fun getCartId(): String? {
+        return sharedPreferences.getString("CART_ID", null)
+    }
+
+    private fun saveCartId(cartId: String) {
+        sharedPreferences.edit().putString("CART_ID", cartId).apply()
+    }
+
+    suspend fun refreshCartItemsInfo(): Result<List<CartItem>> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val cartItems = getCartItems().toMutableList()
+
+                for (i in cartItems.indices) {
+                    val item = cartItems[i]
+                    try {
+                        val productResponse = apiService.getFoodById(item.foodId)
+                        if (productResponse.isSuccessful) {
+                            val product = productResponse.body()
+                            val price = (product?.get("price") as? Number)?.toDouble() ?: 0.0
+                            val name = product?.get("name") as? String ?: ""
+                            val images = product?.get("images") as? List<*>
+                            val imageUrl = if (images?.isNotEmpty() == true) {
+                                val firstImage = images[0] as? Map<*, *>
+                                firstImage?.get("path") as? String ?: ""
+                            } else ""
+
+                            cartItems[i] = item.copy(
+                                price = price,
+                                name = name,
+                                image = imageUrl
+                            )
+                        }
+                    } catch (e: Exception) {
+                        // Nếu không lấy được thông tin sản phẩm, giữ nguyên item cũ
+                        continue
+                    }
+                }
+
+                saveCartItems(cartItems)
+                Result.success(cartItems)
+            } catch (e: Exception) {
+                Result.failure(e)
+            }
+        }
+    }
+
+    suspend fun getTotalPrice(): Double {
+        return withContext(Dispatchers.IO) {
+            val cartItems = getCartItems().toMutableList()
+            var total = 0.0
+            var needToSave = false
+
+            for (i in cartItems.indices) {
+                val item = cartItems[i]
+
+                if (item.price > 0) {
+                    // Nếu đã có giá trong cache, sử dụng luôn
+                    total += item.price * item.quantity
+                } else {
+                    // Nếu chưa có giá, fetch từ API
+                    try {
+                        val productResponse = apiService.getFoodById(item.foodId)
+                        if (productResponse.isSuccessful) {
+                            val product = productResponse.body()
+                            val price = (product?.get("price") as? Number)?.toDouble() ?: 0.0
+                            val name = product?.get("name") as? String ?: ""
+                            val images = product?.get("images") as? List<*>
+                            val imageUrl = if (images?.isNotEmpty() == true) {
+                                val firstImage = images[0] as? Map<*, *>
+                                firstImage?.get("path") as? String ?: ""
+                            } else ""
+
+                            // Cập nhật thông tin sản phẩm vào cache
+                            cartItems[i] = item.copy(
+                                price = price,
+                                name = name,
+                                image = imageUrl
+                            )
+                            needToSave = true
+
+                            total += price * item.quantity
+                        }
+                    } catch (e: Exception) {
+                        // Nếu có lỗi khi fetch API, bỏ qua item này
+                        continue
+                    }
+                }
+            }
+
+            // Lưu lại cart items đã được cập nhật thông tin nếu cần
+            if (needToSave) {
+                saveCartItems(cartItems)
+            }
+
+            // Debug: Log tổng tiền
+            android.util.Log.d("CartManager", "📊 Tính tổng tiền:")
+            cartItems.forEach { item ->
+                android.util.Log.d("CartManager", "   • ${item.name} (${item.foodId}): ${item.price} x ${item.quantity} = ${item.price * item.quantity}")
+            }
+            android.util.Log.d("CartManager", "   💰 Tổng cộng: $total")
+
+            total
+        }
     }
 
     private fun saveCartItems(items: List<CartItem>) {
@@ -243,4 +433,4 @@ class CartManager(private val context: Context) {
         private const val PREF_NAME = "cart_preferences"
         private const val KEY_CART_ITEMS = "cart_items"
     }
-} 
+}
