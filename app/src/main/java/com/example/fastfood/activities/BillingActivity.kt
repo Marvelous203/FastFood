@@ -15,6 +15,7 @@ import com.example.fastfood.activities.MainActivity
 import com.example.fastfood.adapters.CartAdapter
 import com.example.fastfood.databinding.ActivityBillingBinding
 import com.example.fastfood.models.PaymentMethod
+import com.example.fastfood.utils.ZaloPayQRDialog
 import com.example.fastfood.viewmodels.BillingViewModel
 
 class BillingActivity : AppCompatActivity() {
@@ -124,6 +125,12 @@ class BillingActivity : AppCompatActivity() {
         viewModel.paymentSuccess.observe(this) { success ->
             if (success == true && !isFinishing && !isDestroyed) {
                 showSuccessDialog()
+            }
+        }
+
+        viewModel.showZaloPayQR.observe(this) { showQR ->
+            if (showQR == true && !isFinishing && !isDestroyed) {
+                showZaloPayQRDialog()
             }
         }
 
@@ -324,5 +331,22 @@ class BillingActivity : AppCompatActivity() {
                 finish()
             }
         }
+    }
+
+    private fun showZaloPayQRDialog() {
+        val totalAmount = viewModel.totalPrice.value ?: 0.0
+
+        val qrDialog = ZaloPayQRDialog(
+            context = this,
+            amount = totalAmount,
+            onPaymentSuccess = {
+                viewModel.completeZaloPayPayment()
+            },
+            onPaymentCancel = {
+                viewModel.cancelZaloPayPayment()
+            }
+        )
+
+        qrDialog.show()
     }
 }

@@ -36,6 +36,10 @@ class BillingViewModel(application: Application) : AndroidViewModel(application)
     private val _paymentSuccess = MutableLiveData<Boolean>()
     val paymentSuccess: LiveData<Boolean> = _paymentSuccess
 
+    // ZaloPay QR dialog
+    private val _showZaloPayQR = MutableLiveData<Boolean>()
+    val showZaloPayQR: LiveData<Boolean> = _showZaloPayQR
+
     private val _selectedPaymentMethod = MutableLiveData<PaymentMethod>()
     val selectedPaymentMethod: LiveData<PaymentMethod> = _selectedPaymentMethod
 
@@ -192,10 +196,27 @@ class BillingViewModel(application: Application) : AndroidViewModel(application)
     }
 
     private suspend fun processZaloPayPayment() {
-        // Simulate ZaloPay payment
-        delay(800)
-        createOrder()
-        _paymentSuccess.value = true
+        // Show ZaloPay QR dialog instead of creating order immediately
+        _showZaloPayQR.value = true
+    }
+
+    fun completeZaloPayPayment() {
+        viewModelScope.launch {
+            try {
+                _isLoading.value = true
+                delay(500) // Simulate processing
+                createOrder()
+                _paymentSuccess.value = true
+            } catch (e: Exception) {
+                _error.value = "Lỗi xử lý thanh toán: ${e.message}"
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+    fun cancelZaloPayPayment() {
+        _showZaloPayQR.value = false
     }
 
             private suspend fun createOrder() {
