@@ -136,7 +136,7 @@ interface ApiService {
     ): Response<Map<String, Any>>
 
     @GET("api/v1/orders/me")
-    suspend fun getMyOrders(): Response<Map<String, Any>>
+    suspend fun getMyOrders(): Response<OrdersApiResponse>
 
     @GET("api/v1/orders/me")
     suspend fun getMyOrdersWithParams(
@@ -144,7 +144,7 @@ interface ApiService {
         @Query("limit") limit: Int? = null,
         @Query("filters") filters: String? = null,
         @Query("sort") sort: String? = null
-    ): Response<Map<String, Any>>
+    ): Response<OrdersApiResponse>
 
     @GET("api/v1/orders/{id}")
     suspend fun getOrderById(

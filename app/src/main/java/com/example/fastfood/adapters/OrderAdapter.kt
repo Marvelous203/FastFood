@@ -32,7 +32,14 @@ class OrderAdapter(
     }
 
     override fun onBindViewHolder(holder: OrderViewHolder, position: Int) {
-        holder.bind(getItem(position))
+        val order = getItem(position)
+        android.util.Log.d("OrderAdapter", "Binding order at position $position: ${order.id}")
+        holder.bind(order)
+    }
+
+    override fun submitList(list: List<Order>?) {
+        android.util.Log.d("OrderAdapter", "submitList called with ${list?.size ?: 0} orders")
+        super.submitList(list)
     }
 
     inner class OrderViewHolder(

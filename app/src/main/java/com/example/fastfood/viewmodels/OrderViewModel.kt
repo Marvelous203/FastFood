@@ -49,7 +49,7 @@ class OrderViewModel(application: Application) : AndroidViewModel(application) {
 
     init {
         _currentFilter.value = OrderFilter.ALL
-        loadOrders()
+        // Don't auto-load orders, let Fragment control when to load
     }
 
     fun loadOrders(refresh: Boolean = false) {
@@ -67,19 +67,21 @@ class OrderViewModel(application: Application) : AndroidViewModel(application) {
                 if (response.isSuccessful) {
                     val responseBody = response.body()
                     if (responseBody != null) {
-                        val allOrders = parseOrdersResponse(responseBody)
+                        val allOrders = responseBody.data
+                        android.util.Log.d("OrderViewModel", "Loaded ${allOrders.size} orders from API")
                         _orders.value = allOrders
 
                         // Apply current filter
                         applyFilter(_currentFilter.value ?: OrderFilter.ALL)
 
                         // All orders loaded successfully
-
-                        _isEmpty.value = (_orders.value?.isEmpty() == true)
+                        android.util.Log.d("OrderViewModel", "Orders set successfully, isEmpty: ${(_orders.value?.isEmpty() == true)}")
                     } else {
+                        android.util.Log.e("OrderViewModel", "Response body is null")
                         _errorMessage.value = "Không thể tải danh sách đơn hàng"
                     }
                 } else {
+                    android.util.Log.e("OrderViewModel", "API call failed: ${response.code()}")
                     handleApiError(response)
                 }
             } catch (e: Exception) {
@@ -155,12 +157,19 @@ class OrderViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun applyFilter(filter: OrderFilter) {
-        val allOrders = _orders.value ?: return
+        val allOrders = _orders.value ?: run {
+            android.util.Log.w("OrderViewModel", "applyFilter called but _orders.value is null")
+            return
+        }
+
+        android.util.Log.d("OrderViewModel", "Applying filter $filter to ${allOrders.size} orders")
 
         val filtered = when (filter) {
             OrderFilter.ALL -> allOrders
             OrderFilter.PENDING -> allOrders.filter {
-                it.status.uppercase() in listOf("PENDING", "CONFIRMED")
+                val status = it.status.uppercase()
+                android.util.Log.d("OrderViewModel", "Checking order ${it.id} with status: '${it.status}' -> '${status}'")
+                status in listOf("PENDING", "CONFIRMED")
             }
             OrderFilter.PROCESSING -> allOrders.filter {
                 it.status.uppercase() in listOf("PREPARING", "READY", "DELIVERING")
@@ -173,41 +182,12 @@ class OrderViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
 
+        android.util.Log.d("OrderViewModel", "Filter result: ${filtered.size} orders")
         _filteredOrders.value = filtered
         _isEmpty.value = filtered.isEmpty()
     }
 
-    private fun parseOrdersResponse(response: Map<String, Any>): List<Order> {
-        // This is a simplified parser - you might need to adjust based on actual API response
-        return try {
-            val data = response["data"] as? Map<String, Any>
-            val items = data?.get("data") as? List<Map<String, Any>> ?: emptyList()
 
-            items.mapNotNull { item ->
-                try {
-                    // Parse order from API response
-                    // This is a basic implementation - adjust based on your API structure
-                    Order(
-                        id = item["id"] as? String ?: "",
-                        userId = item["userId"] as? String ?: "",
-                        items = emptyList(), // Parse order items
-                        totalAmount = (item["totalAmount"] as? Number)?.toDouble() ?: 0.0,
-                        status = item["status"] as? String ?: "PENDING",
-                        paymentMethod = item["paymentMethod"] as? String ?: "CASH",
-                        deliveryAddress = item["deliveryAddress"] as? String,
-                        phone = item["phone"] as? String ?: "",
-                        note = item["note"] as? String,
-                        createdAt = item["createdAt"] as? String,
-                        estimatedDeliveryTime = item["estimatedDeliveryTime"] as? String
-                    )
-                } catch (e: Exception) {
-                    null
-                }
-            }
-        } catch (e: Exception) {
-            emptyList()
-        }
-    }
 
     private fun handleApiError(response: Response<*>, defaultMessage: String = "Có lỗi xảy ra") {
         val errorMessage = when (response.code()) {
