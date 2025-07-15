@@ -96,6 +96,10 @@ interface ApiService {
         @Query("page") page: Int? = null,
         @Query("limit") limit: Int? = null
     ): Response<Map<String, Any>>
+    @POST("api/v1/orders/custom")
+    suspend fun createCustomOrderFromCart(
+        @Body request: CustomOrderFromCartRequest
+    ): Response<Order>
 
     // Cart endpoints
     @GET("api/v1/carts/me")
@@ -138,8 +142,7 @@ interface ApiService {
         @Query("limit") limit: Int? = null,
         @Query("filters") filters: String? = null,
         @Query("sort") sort: String? = null
-    ): Response<Map<String, Any>>
-
+    ): Response<OrdersApiResponse>
     @GET("api/v1/orders/{id}")
     suspend fun getOrderById(
         @Path("id") id: String
@@ -153,11 +156,6 @@ interface ApiService {
     @POST("api/v1/orders/custom")
     suspend fun createCustomOrder(
         @Body request: CustomOrderRequest
-    ): Response<Order>
-
-    @POST("api/v1/orders/custom")
-    suspend fun createCustomOrderFromCart(
-        @Body request: CustomOrderFromCartRequest
     ): Response<Order>
 
     @POST("api/v1/orders/{id}/cancel")
@@ -219,19 +217,3 @@ interface ApiService {
         @Path("id") id: String
     ): Response<Payment>
 }
-
-// Base response type for all API responses
-data class BaseResponse<T>(
-    val success: Boolean,
-    val message: String,
-    val data: T? = null
-)
-
-// Specific response types
-typealias ProductResponse = BaseResponse<Food>
-typealias ProductsResponse = BaseResponse<List<Food>>
-typealias OrderResponse = BaseResponse<Order>
-typealias OrdersResponse = BaseResponse<List<Order>>
-typealias CategoriesResponse = BaseResponse<List<Category>>
-typealias ImageResponse = BaseResponse<String>
-typealias FileUploadResponse = BaseResponse<String>

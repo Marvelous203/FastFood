@@ -16,7 +16,7 @@ data class Order(
     val items: List<OrderItem>? = null,
 
     @SerializedName("total")
-    val totalAmount: Double? = null,
+    val total: Double? = null,
 
     @SerializedName("status")
     val status: String = "pending", // pending, confirmed, preparing, ready, delivered, cancelled
@@ -48,14 +48,18 @@ data class Order(
 
     @SerializedName("estimated_delivery_time")
     val estimatedDeliveryTime: String? = null
-)
+) {
+    // Getter for totalAmount to maintain backward compatibility
+    val totalAmount: Double?
+        get() = total
+}
 
 data class OrderItem(
     @SerializedName("productId")
-    val foodId: String,
+    val productId: String,
 
     @SerializedName("productName")
-    val foodName: String,
+    val productName: String,
 
     @SerializedName("quantity")
     val quantity: Int,
@@ -65,6 +69,21 @@ data class OrderItem(
 
     @SerializedName("note")
     val note: String? = null
+) {
+    // Legacy getters for backward compatibility
+    val foodId: String
+        get() = productId
+
+    val foodName: String
+        get() = productName
+}
+
+data class OrdersApiResponse(
+    @SerializedName("data")
+    val data: List<Order>,
+
+    @SerializedName("hasNextPage")
+    val hasNextPage: Boolean = false
 )
 
 data class OrderRequest(

@@ -51,6 +51,8 @@ class OrdersFragment : Fragment() {
             setupRecyclerView()
             setupFilterTabs()
             setupSwipeRefresh()
+            // Load orders when fragment is created
+            orderViewModel.loadOrders()
         }
     }
 
@@ -128,6 +130,7 @@ class OrdersFragment : Fragment() {
 
     private fun setupObservers() {
         orderViewModel.filteredOrders.observe(viewLifecycleOwner) { orders ->
+            android.util.Log.d("OrdersFragment", "Received ${orders?.size ?: 0} filtered orders")
             orderAdapter.submitList(orders)
         }
 
@@ -136,6 +139,7 @@ class OrdersFragment : Fragment() {
         }
 
         orderViewModel.isEmpty.observe(viewLifecycleOwner) { isEmpty ->
+            android.util.Log.d("OrdersFragment", "isEmpty changed to: $isEmpty")
             if (isEmpty) {
                 showEmptyState()
             } else {
@@ -167,11 +171,13 @@ class OrdersFragment : Fragment() {
     }
 
     private fun showEmptyState() {
+        android.util.Log.d("OrdersFragment", "Showing empty state")
         binding.layoutEmptyState.visibility = View.VISIBLE
         binding.rvOrders.visibility = View.GONE
     }
 
     private fun hideEmptyState() {
+        android.util.Log.d("OrdersFragment", "Hiding empty state - showing orders")
         binding.layoutEmptyState.visibility = View.GONE
         binding.rvOrders.visibility = View.VISIBLE
     }
