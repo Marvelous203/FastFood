@@ -80,7 +80,7 @@ interface ApiService {
     ): Response<Map<String, Any>>
 
     @GET("api/v1/products/{id}")
-    suspend fun getFoodById(@Path("id") id: String): Response<Map<String, Any>>
+    suspend fun getProductById(@Path("id") id: String): Response<Food>
 
     @GET("api/v1/products")
     suspend fun getFoodsByCategory(
@@ -96,9 +96,6 @@ interface ApiService {
         @Query("page") page: Int? = null,
         @Query("limit") limit: Int? = null
     ): Response<Map<String, Any>>
-
-    @GET("api/v1/products/{id}")
-    suspend fun getProductById(@Path("id") id: String): Response<Food>
 
     // Cart endpoints
     @GET("api/v1/carts/me")
@@ -136,10 +133,7 @@ interface ApiService {
     ): Response<Map<String, Any>>
 
     @GET("api/v1/orders/me")
-    suspend fun getMyOrders(): Response<Map<String, Any>>
-
-    @GET("api/v1/orders/me")
-    suspend fun getMyOrdersWithParams(
+    suspend fun getMyOrders(
         @Query("page") page: Int? = null,
         @Query("limit") limit: Int? = null,
         @Query("filters") filters: String? = null,

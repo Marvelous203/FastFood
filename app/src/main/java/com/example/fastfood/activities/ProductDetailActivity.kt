@@ -17,6 +17,7 @@ import com.example.fastfood.models.Food
 import com.example.fastfood.viewmodels.CartViewModel
 import com.example.fastfood.viewmodels.ProductDetailViewModel
 import com.example.fastfood.utils.Result
+import com.example.fastfood.utils.NetworkHelper
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.util.*
@@ -28,6 +29,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import com.example.fastfood.models.CartItem
+import com.example.fastfood.utils.NotificationHelper
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
+import java.net.ConnectException
+import javax.net.ssl.SSLException
 
 class ProductDetailActivity : AppCompatActivity() {
     private lateinit var binding: ActivityProductDetailBinding
@@ -36,6 +42,7 @@ class ProductDetailActivity : AppCompatActivity() {
     private val priceFormatter = DecimalFormat("#,###₫")
     private val dateFormatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
     private var currentFood: Food? = null
+    private lateinit var notificationHelper: NotificationHelper
 
     companion object {
         private const val EXTRA_PRODUCT_ID = "product_id"
@@ -53,6 +60,9 @@ class ProductDetailActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityProductDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        // Khởi tạo NotificationHelper
+        notificationHelper = NotificationHelper(this)
 
         setupQuantitySpinner()
 
@@ -83,9 +93,9 @@ class ProductDetailActivity : AppCompatActivity() {
 
     private fun setupObservers() {
         productDetailViewModel.product.observe(this) { food ->
-            food?.let { 
+            food?.let {
                 currentFood = it
-                updateUI(it) 
+                updateUI(it)
             }
         }
 
@@ -99,8 +109,13 @@ class ProductDetailActivity : AppCompatActivity() {
                 is Result.Success -> {
                     Toast.makeText(this, R.string.added_to_cart_success, Toast.LENGTH_SHORT).show()
                 }
+
                 is Result.Failure -> {
-                    Toast.makeText(this, result.exception.message ?: getString(R.string.error_add_to_cart), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this,
+                        result.exception.message ?: getString(R.string.error_add_to_cart),
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
         }
@@ -108,42 +123,80 @@ class ProductDetailActivity : AppCompatActivity() {
 
     private fun setupClickListeners() {
         binding.btnAddToCart.setOnClickListener {
+            // Kiểm tra currentFood trước khi thêm vào giỏ hàng
+            val food = currentFood
+            if (food == null) {
+                Snackbar.make(
+                    binding.root,
+                    "Lỗi: Không thể tải thông tin sản phẩm",
+                    Snackbar.LENGTH_LONG
+                )
+                    .show()
+                return@setOnClickListener
+            }
+
+            // Kiểm tra id không null hoặc empty
+            if (food.id.isBlank()) {
+                Snackbar.make(binding.root, "Lỗi: ID sản phẩm không hợp lệ", Snackbar.LENGTH_LONG)
+                    .show()
+                return@setOnClickListener
+            }
+
             // Show loading state
             binding.btnAddToCart.isEnabled = false
             binding.btnAddToCart.text = "Đang thêm..."
 
-            // Add to cart
+// Add to cart
             lifecycleScope.launch {
                 try {
-                    val result = cartViewModel.addToCart(currentFood?.id ?: return@launch, 1)
-                    
+                    val result = cartViewModel.addToCart(food.id, 1)
+
                     withContext(Dispatchers.Main) {
                         when (result) {
                             is Result.Success -> {
-                                // Show success message with action to view cart
-                                Snackbar.make(binding.root, "Đã thêm vào giỏ hàng", Snackbar.LENGTH_LONG)
+                                Snackbar.make(
+                                    binding.root,
+                                    "Đã thêm thành công!",
+                                    Snackbar.LENGTH_SHORT
+                                )
                                     .setAction("Xem giỏ hàng") {
-                                        CartActivity.start(this@ProductDetailActivity)
+                                        // Navigate to cart
                                     }
                                     .show()
                             }
+
                             is Result.Failure -> {
-                                // Show error message
-                                Snackbar.make(binding.root, result.exception.message ?: "Lỗi thêm vào giỏ hàng", Snackbar.LENGTH_LONG)
-                                    .show()
+                                val errorMessage =
+                                    result.exception.message ?: "Lỗi thêm vào giỏ hàng"
+
+                                // Kiểm tra nếu lỗi là do kết nối khi fetch thông tin sản phẩm
+                                if (errorMessage.contains("kết nối") && !errorMessage.contains("thêm vào giỏ hàng")) {
+                                    Snackbar.make(
+                                        binding.root,
+                                        "Đã thêm vào giỏ hàng! (Đang tải thông tin sản phẩm...)",
+                                        Snackbar.LENGTH_LONG
+                                    )
+                                        .show()
+                                } else {
+                                    Snackbar.make(binding.root, errorMessage, Snackbar.LENGTH_LONG)
+                                        .show()
+                                }
                             }
                         }
-                        
+
                         // Reset button state
                         binding.btnAddToCart.isEnabled = true
                         binding.btnAddToCart.text = getString(R.string.add_to_cart)
                     }
                 } catch (e: Exception) {
                     withContext(Dispatchers.Main) {
-                        // Show error message
-                        Snackbar.make(binding.root, "Lỗi kết nối: ${e.message}", Snackbar.LENGTH_LONG)
+                        Snackbar.make(
+                            binding.root,
+                            "Lỗi kết nối: ${e.message}",
+                            Snackbar.LENGTH_LONG
+                        )
                             .show()
-                        
+
                         // Reset button state
                         binding.btnAddToCart.isEnabled = true
                         binding.btnAddToCart.text = getString(R.string.add_to_cart)
@@ -152,160 +205,163 @@ class ProductDetailActivity : AppCompatActivity() {
             }
         }
     }
+                private fun updateUI(food: Food) {
+                    // Setup image slider
+                    if (food.images.isNotEmpty()) {
+                        binding.viewPagerImages.apply {
+                            adapter = ImagePagerAdapter(food.images)
+                            orientation = ViewPager2.ORIENTATION_HORIZONTAL
+                            visibility = View.VISIBLE
+                        }
+                    } else {
+                        binding.viewPagerImages.visibility = View.GONE
+                    }
 
-    private fun updateUI(food: Food) {
-        // Setup image slider
-        if (food.images.isNotEmpty()) {
-            binding.viewPagerImages.apply {
-                adapter = ImagePagerAdapter(food.images)
-                orientation = ViewPager2.ORIENTATION_HORIZONTAL
-                visibility = View.VISIBLE
+                    // Basic info
+                    binding.tvFoodName.text = food.name
+
+                    // Brand
+                    if (!food.brand.isNullOrBlank()) {
+                        binding.tvBrand.apply {
+                            text = getString(R.string.brand_format, food.brand)
+                            visibility = View.VISIBLE
+                        }
+                    } else {
+                        binding.tvBrand.visibility = View.GONE
+                    }
+
+                    // Description
+                    if (!food.description.isNullOrBlank()) {
+                        binding.tvDescription.apply {
+                            text = food.description
+                            visibility = View.VISIBLE
+                        }
+                    } else {
+                        binding.tvDescription.visibility = View.GONE
+                    }
+
+                    // Price and discount
+                    val finalPrice = if (food.discount > 0) {
+                        food.price * (1 - food.discount / 100.0)
+                    } else {
+                        food.price
+                    }
+                    binding.tvPrice.text = priceFormatter.format(finalPrice)
+
+                    // Original price and discount badge
+                    if (food.discount > 0) {
+                        binding.tvOriginalPrice.apply {
+                            text = priceFormatter.format(food.price)
+                            paintFlags = paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
+                            visibility = View.VISIBLE
+                        }
+                        binding.tvDiscountBadge.apply {
+                            text = getString(R.string.discount_format, food.discount)
+                            visibility = View.VISIBLE
+                        }
+                    } else {
+                        binding.tvOriginalPrice.visibility = View.GONE
+                        binding.tvDiscountBadge.visibility = View.GONE
+                    }
+
+                    // Rating
+                    if (food.rating > 0) {
+                        binding.tvRating.text = String.format("%.1f", food.rating)
+                        binding.ratingContainer.visibility = View.VISIBLE
+                    } else {
+                        binding.ratingContainer.visibility = View.GONE
+                    }
+
+                    // Product details card
+                    var hasDetails = false
+
+                    // Brand detail
+                    if (!food.brand.isNullOrBlank()) {
+                        binding.tvBrandDetail.text = food.brand
+                        binding.brandRow.visibility = View.VISIBLE
+                        hasDetails = true
+                    } else {
+                        binding.brandRow.visibility = View.GONE
+                    }
+
+                    // Weight
+                    if (!food.weight.isNullOrBlank()) {
+                        binding.tvWeight.text = food.weight
+                        binding.weightRow.visibility = View.VISIBLE
+                        hasDetails = true
+                    } else {
+                        binding.weightRow.visibility = View.GONE
+                    }
+
+                    // Origin
+                    if (!food.origin.isNullOrBlank()) {
+                        binding.tvOrigin.text = food.origin
+                        binding.originRow.visibility = View.VISIBLE
+                        hasDetails = true
+                    } else {
+                        binding.originRow.visibility = View.GONE
+                    }
+
+                    // Packaging
+                    if (!food.packaging.isNullOrBlank()) {
+                        binding.tvPackaging.text = food.packaging
+                        binding.packagingRow.visibility = View.VISIBLE
+                        hasDetails = true
+                    } else {
+                        binding.packagingRow.visibility = View.GONE
+                    }
+
+                    binding.detailsCard.visibility = if (hasDetails) View.VISIBLE else View.GONE
+
+                    // Additional information card
+                    var hasAdditionalInfo = false
+
+                    // Ingredients
+                    if (!food.ingredients.isNullOrBlank()) {
+                        binding.tvIngredients.text = food.ingredients
+                        binding.ingredientsContainer.visibility = View.VISIBLE
+                        hasAdditionalInfo = true
+                    } else {
+                        binding.ingredientsContainer.visibility = View.GONE
+                    }
+
+                    // Nutrition facts
+                    if (!food.nutrition.isNullOrBlank()) {
+                        binding.tvNutritionFacts.text = food.nutrition
+                        binding.nutritionContainer.visibility = View.VISIBLE
+                        hasAdditionalInfo = true
+                    } else {
+                        binding.nutritionContainer.visibility = View.GONE
+                    }
+
+                    // Allergens
+                    if (!food.allergens.isNullOrBlank()) {
+                        binding.tvAllergens.text = food.allergens
+                        binding.allergensContainer.visibility = View.VISIBLE
+                        hasAdditionalInfo = true
+                    } else {
+                        binding.allergensContainer.visibility = View.GONE
+                    }
+
+                    // Storage instructions
+                    if (!food.storageInstructions.isNullOrBlank()) {
+                        binding.tvStorageInstructions.text = food.storageInstructions
+                        binding.storageContainer.visibility = View.VISIBLE
+                        hasAdditionalInfo = true
+                    } else {
+                        binding.storageContainer.visibility = View.GONE
+                    }
+
+                    binding.additionalInfoCard.visibility =
+                        if (hasAdditionalInfo) View.VISIBLE else View.GONE
+
+                    // Add to cart button state
+                    binding.btnAddToCart.apply {
+                        isEnabled = food.stock > 0
+                        text =
+                            getString(if (food.stock > 0) R.string.add_to_cart else R.string.out_of_stock)
+                    }
+                }
             }
-        } else {
-            binding.viewPagerImages.visibility = View.GONE
-        }
 
-        // Basic info
-        binding.tvFoodName.text = food.name
 
-        // Brand
-        if (!food.brand.isNullOrBlank()) {
-            binding.tvBrand.apply {
-                text = getString(R.string.brand_format, food.brand)
-                visibility = View.VISIBLE
-            }
-        } else {
-            binding.tvBrand.visibility = View.GONE
-        }
-
-        // Description
-        if (!food.description.isNullOrBlank()) {
-            binding.tvDescription.apply {
-                text = food.description
-                visibility = View.VISIBLE
-            }
-        } else {
-            binding.tvDescription.visibility = View.GONE
-        }
-
-        // Price and discount
-        val finalPrice = if (food.discount > 0) {
-            food.price * (1 - food.discount / 100.0)
-        } else {
-            food.price
-        }
-        binding.tvPrice.text = priceFormatter.format(finalPrice)
-
-        // Original price and discount badge
-        if (food.discount > 0) {
-            binding.tvOriginalPrice.apply {
-                text = priceFormatter.format(food.price)
-                paintFlags = paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
-                visibility = View.VISIBLE
-            }
-            binding.tvDiscountBadge.apply {
-                text = getString(R.string.discount_format, food.discount)
-                visibility = View.VISIBLE
-            }
-        } else {
-            binding.tvOriginalPrice.visibility = View.GONE
-            binding.tvDiscountBadge.visibility = View.GONE
-        }
-
-        // Rating
-        if (food.rating > 0) {
-            binding.tvRating.text = String.format("%.1f", food.rating)
-            binding.ratingContainer.visibility = View.VISIBLE
-        } else {
-            binding.ratingContainer.visibility = View.GONE
-        }
-
-        // Product details card
-        var hasDetails = false
-
-        // Brand detail
-        if (!food.brand.isNullOrBlank()) {
-            binding.tvBrandDetail.text = food.brand
-            binding.brandRow.visibility = View.VISIBLE
-            hasDetails = true
-        } else {
-            binding.brandRow.visibility = View.GONE
-        }
-
-        // Weight
-        if (!food.weight.isNullOrBlank()) {
-            binding.tvWeight.text = food.weight
-            binding.weightRow.visibility = View.VISIBLE
-            hasDetails = true
-        } else {
-            binding.weightRow.visibility = View.GONE
-        }
-
-        // Origin
-        if (!food.origin.isNullOrBlank()) {
-            binding.tvOrigin.text = food.origin
-            binding.originRow.visibility = View.VISIBLE
-            hasDetails = true
-        } else {
-            binding.originRow.visibility = View.GONE
-        }
-
-        // Packaging
-        if (!food.packaging.isNullOrBlank()) {
-            binding.tvPackaging.text = food.packaging
-            binding.packagingRow.visibility = View.VISIBLE
-            hasDetails = true
-        } else {
-            binding.packagingRow.visibility = View.GONE
-        }
-
-        binding.detailsCard.visibility = if (hasDetails) View.VISIBLE else View.GONE
-
-        // Additional information card
-        var hasAdditionalInfo = false
-
-        // Ingredients
-        if (!food.ingredients.isNullOrBlank()) {
-            binding.tvIngredients.text = food.ingredients
-            binding.ingredientsContainer.visibility = View.VISIBLE
-            hasAdditionalInfo = true
-        } else {
-            binding.ingredientsContainer.visibility = View.GONE
-        }
-
-        // Nutrition facts
-        if (!food.nutrition.isNullOrBlank()) {
-            binding.tvNutritionFacts.text = food.nutrition
-            binding.nutritionContainer.visibility = View.VISIBLE
-            hasAdditionalInfo = true
-        } else {
-            binding.nutritionContainer.visibility = View.GONE
-        }
-
-        // Allergens
-        if (!food.allergens.isNullOrBlank()) {
-            binding.tvAllergens.text = food.allergens
-            binding.allergensContainer.visibility = View.VISIBLE
-            hasAdditionalInfo = true
-        } else {
-            binding.allergensContainer.visibility = View.GONE
-        }
-
-        // Storage instructions
-        if (!food.storageInstructions.isNullOrBlank()) {
-            binding.tvStorageInstructions.text = food.storageInstructions
-            binding.storageContainer.visibility = View.VISIBLE
-            hasAdditionalInfo = true
-        } else {
-            binding.storageContainer.visibility = View.GONE
-        }
-
-        binding.additionalInfoCard.visibility = if (hasAdditionalInfo) View.VISIBLE else View.GONE
-
-        // Add to cart button state
-        binding.btnAddToCart.apply {
-            isEnabled = food.stock > 0
-            text = getString(if (food.stock > 0) R.string.add_to_cart else R.string.out_of_stock)
-        }
-    }
-} 
